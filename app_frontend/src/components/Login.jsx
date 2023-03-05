@@ -3,10 +3,34 @@ import { GoogleLogin,googleLogout,useGoogleLogin } from '@react-oauth/google'
 import jwt_decode from 'jwt-decode'
 import backgroundVideo from "../assets/share.mp4"
 import logo from "../assets/logowhite.png"
+import { client } from '../client'
+import { useNavigate } from 'react-router-dom'
 
 const Login = () => {
+  const navigate=useNavigate();
 
- 
+  const responseGoogle=(response)=>{
+
+    const decoded=jwt_decode(response);
+    console.log(decoded)
+  
+    const{name,picture,sub}=decoded;
+    
+    const doc={
+      _id:sub,
+      _type:'user',
+      userName:name,
+      image:picture
+    }
+  
+    client.createIfNotExists(doc)
+    .then(()=>{
+      navigate('/',{replace:true})
+    })
+  
+  
+  
+  }
   return (
    <div className='flex justify-start items-center flex-col h-screen'>
     <div className='relative w-full h-full'>
@@ -27,8 +51,8 @@ const Login = () => {
 
   <div className='shawdow-2xl'>
     <GoogleLogin
-    onSuccess={response=>console.log(jwt_decode(response.credential))}
-    
+    onSuccess={response=>responseGoogle(response.credential)}
+    onError={console.log("Login Failed")}
     />
 
 
